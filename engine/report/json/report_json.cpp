@@ -558,6 +558,15 @@ void to_json( JsonOutput root, const ::report::json::report_configuration_t& rep
       // TODO: Why do we have this instead of using some static one?
       resources_max[ util::resource_type_string( r ) ] = util::round( entry.resource_max_snapshot[ r ], 2 );
     } );
+
+    if ( !entry.custom_values.empty() )
+    {
+      auto custom_values = json[ "custom_values" ];
+      range::for_each( entry.custom_values, [ &custom_values ]( const auto& it ) {
+        custom_values[ it.first ] = util::round( it.second, 2 );
+      } );
+    }
+
   } );
 }
 

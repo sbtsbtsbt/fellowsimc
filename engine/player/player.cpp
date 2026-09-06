@@ -12936,6 +12936,8 @@ player_collected_data_t::action_sequence_data_t::action_sequence_data_t( const a
       resource_max_snapshot[ i ] = p->resources.max[ i ];
     }
   }
+
+  p->collect_custom_values( custom_values );
 }
 
 player_collected_data_t::player_collected_data_t( const player_t* player ) :

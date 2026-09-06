@@ -159,6 +159,12 @@ public:
     gain_t* efficient_killer;
   } gains;
 
+  struct procs_t
+  {
+    proc_t* ds_aa;
+    proc_t* ds_qf;
+  } procs;
+
 #define MARA_TALENT_LIST( X )                                         \
   X( RED_LEDGER, "red_ledger", "Red Ledger" )                         \
   X( CORROSIVE_SPILL, "corrosive_spill", "Corrosive Spill" )          \
@@ -406,6 +412,8 @@ public:
   std::unique_ptr<expr_t> create_resource_expression( util::string_view name ) override;
 
   void regen( timespan_t periodicity ) override;
+  void collect_custom_values(std::vector<std::pair<std::string, double>>&) const override;
+
   resource_e primary_resource() const override
   {
     return RESOURCE_ENERGY;
@@ -1392,6 +1400,7 @@ struct queens_fang_t : public mara_attack_t
       if ( had_deadly_scheme )
       {
         p()->buffs.deadly_scheme->expire();
+        p()->procs.ds_qf->occur();
       }
 
       p()->buffs.feed_the_queen->expire();
@@ -2312,8 +2321,10 @@ struct arachnid_assault_t : public mara_attack_t
       }
     }
 
-    if ( !is_secondary_action() && had_deadly_scheme )
+    if ( !is_secondary_action() && had_deadly_scheme ) {
+      p()->procs.ds_aa->occur();
       p()->buffs.deadly_scheme->expire();
+    }
 
     if ( !is_secondary_action() && p()->talents_enabled( mara_t::MALEVOLENCE ) )
     {
@@ -2438,6 +2449,15 @@ mara_td_t::mara_td_t( player_t* target, mara_t* source ) : fellowship::fs_player
 // ==========================================================================
 // Rogue Character Definition
 // ==========================================================================
+
+void mara_t::collect_custom_values(std::vector<std::pair<std::string, double>>& vals) const  {
+  if ( talent_enabled( DEADLY_SCHEME ) )
+  {
+    double ds_max = 40.0;
+    double stacks = ds_max* deadly_energy_tracker / talents.deadly_scheme_required_energy;
+    vals.emplace_back( "deadly_scheme_stacks", stacks );
+  }
+}
 
 // mara_t::composite_attribute_multiplier ==================================
 
@@ -2916,6 +2936,8 @@ void mara_t::init_gains()
 void mara_t::init_procs()
 {
   fs_player_t::init_procs();
+  procs.ds_aa = get_proc( "Deathly Scheme: Arachnid Assault" );
+  procs.ds_qf = get_proc( "Deathly Scheme: Queen's Fang" );
 }
 
 // mara_t::init_scaling ====================================================
@@ -3185,6 +3207,7 @@ void mara_t::init_background_actions()
 void mara_t::reset()
 {
   fs_player_t::reset();
+  deadly_energy_tracker = 0;
 }
 
 // mara_t::activate ========================================================

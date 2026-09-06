@@ -1219,6 +1219,7 @@ public:
   virtual void cost_reduction_gain( school_e school, double amount, gain_t* g = nullptr, action_t* a = nullptr );
   virtual void cost_reduction_loss( school_e school, double amount, action_t* a = nullptr );
   virtual void collect_resource_timeline_information();
+  virtual void collect_custom_values( std::vector<std::pair<std::string, double>>& ) const { }
 
   virtual void assess_damage( school_e, result_amount_type, action_state_t* );
   virtual void target_mitigation( school_e, result_amount_type, action_state_t* );
