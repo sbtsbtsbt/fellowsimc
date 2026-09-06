@@ -5,10 +5,41 @@
 # define source files
 include(../source_files/cmake_engine.txt)
 
+
+# For w/e reason it includes files that don't exist like `class_modules/apl/apl_death_knight.hpp` (cmake_engine.txt?).
+# Just add all files here
+set(files)
+foreach(it IN LISTS source_files)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${it}")
+    list(APPEND files "${it}")
+  endif()
+endforeach()
+
+
+# Now include the ship files
+list(APPEND files
+  class_modules/fs_player.cpp
+  class_modules/sc_aeona.cpp
+  class_modules/sc_ardeos.cpp
+  class_modules/sc_elarion.cpp
+  class_modules/sc_gunde.cpp
+  class_modules/sc_mara.cpp
+  class_modules/sc_rime.cpp
+  class_modules/sc_tariq.cpp
+  class_modules/sc_xavian.cpp
+)
+
+set(source_files ${files})
+
 # Define engine library
 add_library(engine ${source_files})
 target_include_directories(engine PUBLIC . ./include ./lib)
 sc_common_compiler_options(engine)
+
+# Cross compile insanity (@todo put in header?).
+if(NOT MSVC)
+  target_compile_definitions(engine PRIVATE __popcnt64=__builtin_popcountll)
+endif()
 
 # Make cmake selections visible to C++ code
 if(SC_NO_THREADING)
